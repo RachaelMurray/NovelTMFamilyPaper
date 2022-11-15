@@ -1,0 +1,15 @@
+From	Entry	Entry Name	Protein names	Gene Names	Organism	Length	Organism (ID)
+A4D9C7_ASPFU	A4D9C7	A4D9C7_ASPFU	Integral membrane protein	AFUA_2G17475	Neosartorya fumigata (strain ATCC MYA-4609 / Af293 / CBS 101355 / FGSC A1100) (Aspergillus fumigatus)	753	330879
+J9VHV9_CRYNH	J9VHV9	J9VHV9_CRYNH	Membrane protein	CNAG_00066	Cryptococcus neoformans var. grubii serotype A (strain H99 / ATCC 208821 / CBS 10515 / FGSC 9487) (Filobasidiella neoformans var. grubii)	1284	235443
+J9VWN8_CRYNH	J9VWN8	J9VWN8_CRYNH	Integral membrane protein (Integral membrane protein, variant)	CNAG_04283	Cryptococcus neoformans var. grubii serotype A (strain H99 / ATCC 208821 / CBS 10515 / FGSC 9487) (Filobasidiella neoformans var. grubii)	766	235443
+YCPE_SCHPO	O74520	YCPE_SCHPO	Uncharacterized membrane protein C663.14c	SPCC663.14c	Schizosaccharomyces pombe (strain 972 / ATCC 24843) (Fission yeast)	687	284812
+YCD3_SCHPO	O94543	YCD3_SCHPO	Uncharacterized membrane protein C1322.03	SPCC1322.03	Schizosaccharomyces pombe (strain 972 / ATCC 24843) (Fission yeast)	862	284812
+FLC2_YEAST	P39719	FLC2_YEAST	Flavin carrier protein 2 (FAD transporter 2) (TRP-like ion channel FLC2)	FLC2 YAL053W	Saccharomyces cerevisiae (strain ATCC 204508 / S288c) (Baker's yeast)	783	559292
+FLC3_YEAST	P53121	FLC3_YEAST	Putative flavin carrier protein 3 (FAD transporter 3) (TRP-like ion channel FLC3)	FLC3 YGL139W G2812	Saccharomyces cerevisiae (strain ATCC 204508 / S288c) (Baker's yeast)	802	559292
+YO365_YEAST	Q08844	YO365_YEAST	Uncharacterized membrane protein YOR365C	YOR365C	Saccharomyces cerevisiae (strain ATCC 204508 / S288c) (Baker's yeast)	703	559292
+FLC1_YEAST	Q08967	FLC1_YEAST	Flavin carrier protein 1 (Bypass of PAM1 protein 1) (FAD transporter 1) (Heme utilization factor 1) (TRP-like ion channel protein FLC1)	FLC1 BOP1 HUF1 YPL221W	Saccharomyces cerevisiae (strain ATCC 204508 / S288c) (Baker's yeast)	793	559292
+PKD2_SCHPO	Q09917	PKD2_SCHPO	TRP-like ion channel pkd2 (Polycystic kidney disease-related ion channel 2)	pkd2 SPAC1F7.03	Schizosaccharomyces pombe (strain 972 / ATCC 24843) (Fission yeast)	710	284812
+Q4WAK3_ASPFU	Q4WAK3	Q4WAK3_ASPFU	Integral membrane protein	AFUA_7G01610	Neosartorya fumigata (strain ATCC MYA-4609 / Af293 / CBS 101355 / FGSC A1100) (Aspergillus fumigatus)	1128	330879
+Q4WHA4_ASPFU	Q4WHA4	Q4WHA4_ASPFU	DUF907 domain protein	AFUA_2G06100	Neosartorya fumigata (strain ATCC MYA-4609 / Af293 / CBS 101355 / FGSC A1100) (Aspergillus fumigatus)	723	330879
+Q4WQM5_ASPFU	Q4WQM5	Q4WQM5_ASPFU	DUF907 domain protein	AFUA_4G13340	Neosartorya fumigata (strain ATCC MYA-4609 / Af293 / CBS 101355 / FGSC A1100) (Aspergillus fumigatus)	721	330879
+Q4WZA3_ASPFU	Q4WZA3	Q4WZA3_ASPFU	DUF907 domain protein	AFUA_2G17650	Neosartorya fumigata (strain ATCC MYA-4609 / Af293 / CBS 101355 / FGSC A1100) (Aspergillus fumigatus)	612	330879

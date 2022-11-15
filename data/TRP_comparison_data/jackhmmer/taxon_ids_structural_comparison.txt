@@ -1,0 +1,7 @@
+Cryptococcus neoformans var. grubii H99 235443
+Saccharomyces cerevisiae S288C 559292
+Schizosaccharomyces pombe 972h- 284812
+Aspergillus fumigatus Af293 330879
+
+
+

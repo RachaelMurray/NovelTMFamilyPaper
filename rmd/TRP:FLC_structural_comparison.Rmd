@@ -1,0 +1,304 @@
+---
+title: "TRP/FLC Structural Comparison"
+author: "Rachael Murray"
+date: "10/11/2022"
+output: html_document
+---
+
+# Summary 
+
+This document was created to draft a figure that shows fungal TRP proteins are not structurally realted to fungal FLC proteins.
+
+```{r setup, include=FALSE}
+library(here)
+library(janitor)
+library(stringr)
+library(dplyr)
+library(ggplot2)
+library(readr)
+library(bio3d)
+library(Biostrings)
+library(data.table)
+```
+
+
+Transmembrane topology predictions
+
+```{r load protein IDs and species}
+
+flc2_hits_info <- read_tsv(
+  here("data/TRP_comparison_data/jackhmmer/Flc2_jackhmmer_iteration3_uniprot_info.tsv")
+  ) %>%
+  clean_names() %>%
+  select(2,6) %>% 
+  dplyr::rename(uniprotID = entry, species = organism) %>% 
+  mutate(species = paste(substr(species,1,1), ". ", word(species,2, sep = " "), sep = fixed(""))) %>% 
+  mutate(species = factor(species, 
+                         levels = c("N. fumigata", "S. cerevisiae", "S. pombe", "C. neoformans"),
+                         labels = c("A. fumigatus", "S. cerevisiae", "S. pombe", "C. neoformans")))
+
+yvc1_hits_info <- read_tsv(
+  here("data/TRP_comparison_data/jackhmmer/Yvc1_jackhmmer_iteration1_uniprot_info.tsv")
+  ) %>%
+  clean_names() %>%
+  select(2,6) %>% 
+  dplyr::rename(uniprotID = entry, species = organism) %>% 
+  mutate(species = paste(substr(species,1,1), ". ", word(species,2, sep = " "), sep = fixed(""))) %>% 
+  mutate(species = factor(species, 
+                         levels = c("N. fumigata", "S. cerevisiae","C. neoformans"),
+                         labels = c("A. fumigatus", "S. cerevisiae","C. neoformans")))
+
+```
+
+
+```{r load DeepTMHMM predictions}
+
+flc2_DeepTMHMM_result <- 
+read_table(
+  here("data/TRP_comparison_data/membrane_topology/Flc2_hits_DeepTMHMM.gff3"),
+  col_names = c("uniprotID", "topology","dom_start","dom_end"),
+  col_types = "ccii",
+  comment = "#"
+  ) %>% 
+  mutate(
+    topology = factor(topology, 
+      levels = c("outside", "inside","periplasm", "TMhelix", "Beta sheet", "signal"),
+      labels = c("extracellular", "cytoplasm", "periplasm","transmembrane helix", "beta sheet", "signal peptide"))
+  ) %>%
+  mutate(uniprotID = word(uniprotID,2, sep = fixed("|"))) %>% 
+  full_join(flc2_hits_info)
+
+
+yvc1_DeepTMHMM_result <- 
+read_table(
+  here("data/TRP_comparison_data/membrane_topology/Yvc1_hits_DeepTMHMM.gff3"),
+  col_names = c("uniprotID", "topology","dom_start","dom_end"),
+  col_types = "ccii",
+  comment = "#"
+  ) %>% 
+  mutate(
+    topology = factor(topology, 
+      levels = c("outside", "inside","periplasm", "TMhelix", "Beta sheet", "signal"),
+      labels = c("extracellular", "cytoplasm", "periplasm","transmembrane helix", "beta sheet", "signal peptide"))
+  ) %>%
+  mutate(uniprotID = word(uniprotID,2, sep = fixed("|"))) %>% 
+  full_join(yvc1_hits_info)
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+```{r load TMbed predictions}
+
+flc2_TMbed_3line <- read_tsv(here("data/TRP_comparison_data/membrane_topology/Flc2_predictions_TMbed_3line.txt"), col_names = FALSE) %>% 
+  dplyr::rename("data" = "X1")
+
+flc2_TMbed_3line_names <- flc2_TMbed_3line[seq(1, nrow(flc2_TMbed_3line), 3), ] %>% 
+  transmute(uniprotID = word(data,2, sep = fixed("|")))
+
+flc2_TMbed_3line_prediction <- flc2_TMbed_3line[seq(3, nrow(flc2_TMbed_3line), 3), ] %>% 
+dplyr::rename("topology" = "data")
+
+flc2_TMbed_result <- tibble(flc2_TMbed_3line_names,flc2_TMbed_3line_prediction) %>% 
+  mutate(topology = str_replace_all(topology, "H", "h"))
+
+flc2_outside <- str_locate_all(flc2_TMbed_result$topology,"o+")
+names(flc2_outside) <- unique(flc2_TMbed_result$uniprotID)
+flc2_outside_list <- purrr::map(flc2_outside, as.data.table)
+flc2_outside_df <- rbindlist(flc2_outside_list, fill = TRUE, idcol = T) %>% 
+  dplyr::rename(uniprotID = .id, dom_start = start, dom_end = end) %>% 
+  mutate(topology = "outside") %>% 
+  as_tibble()
+
+flc2_inside <- str_locate_all(flc2_TMbed_result$topology,"i+")
+names(flc2_inside) <- unique(flc2_TMbed_result$uniprotID)
+flc2_inside_list <- purrr::map(flc2_inside, as.data.table)
+flc2_inside_df <- rbindlist(flc2_inside_list, fill = TRUE, idcol = T) %>% 
+  dplyr::rename(uniprotID = .id, dom_start = start, dom_end = end) %>% 
+  mutate(topology = "inside") %>% 
+  as_tibble()
+
+flc2_signal <- str_locate_all(flc2_TMbed_result$topology,"S+")
+names(flc2_signal) <- unique(flc2_TMbed_result$uniprotID)
+flc2_signal_list <- purrr::map(flc2_signal, as.data.table)
+flc2_signal_df <- rbindlist(flc2_signal_list, fill = TRUE, idcol = T) %>% 
+ dplyr::rename(uniprotID = .id, dom_start = start, dom_end = end) %>% 
+  mutate(topology = "signal") %>% 
+  as_tibble()
+
+flc2_TMhelix <- str_locate_all(flc2_TMbed_result$topology,"h+")
+names(flc2_TMhelix) <- unique(flc2_TMbed_result$uniprotID)
+flc2_TMhelix_list <- purrr::map(flc2_TMhelix, as.data.table)
+flc2_TMhelix_df <- rbindlist(flc2_TMhelix_list, fill = TRUE, idcol = T) %>% 
+ dplyr::rename(uniprotID = .id, dom_start = start, dom_end = end) %>% 
+  mutate(topology = "TMhelix") %>% 
+  as_tibble()
+
+
+flc2_TMbed_df <- bind_rows(flc2_outside_df, flc2_inside_df, flc2_signal_df, flc2_TMhelix_df) %>% 
+  mutate(
+    topology = factor(topology, 
+      levels = c("outside", "inside","periplasm", "TMhelix", "Beta sheet", "signal"),
+      labels = c("extracellular", "cytoplasm", "periplasm","transmembrane helix", "beta sheet", "signal peptide"))
+  ) %>%
+  full_join(flc2_hits_info)
+
+flc2_TMbed_df
+
+###
+
+yvc1_TMbed_3line <- read_tsv(here("data/TRP_comparison_data/membrane_topology/Yvc1_predictions_TMbed_3line.txt"), col_names = FALSE) %>% 
+  dplyr::rename("data" = "X1")
+
+yvc1_TMbed_3line_names <- yvc1_TMbed_3line[seq(1, nrow(yvc1_TMbed_3line), 3), ] %>% 
+  transmute(uniprotID = word(data,2, sep = fixed("|")))
+
+yvc1_TMbed_3line_prediction <- yvc1_TMbed_3line[seq(3, nrow(yvc1_TMbed_3line), 3), ] %>% 
+dplyr::rename("topology" = "data")
+
+yvc1_TMbed_result <- tibble(yvc1_TMbed_3line_names,yvc1_TMbed_3line_prediction) %>% 
+  mutate(topology = str_replace_all(topology, "H", "h"))
+
+yvc1_outside <- str_locate_all(yvc1_TMbed_result$topology,"o+")
+names(yvc1_outside) <- unique(yvc1_TMbed_result$uniprotID)
+yvc1_outside_list <- purrr::map(yvc1_outside, as.data.table)
+yvc1_outside_df <- rbindlist(yvc1_outside_list, fill = TRUE, idcol = T) %>% 
+  dplyr::rename(uniprotID = .id, dom_start = start, dom_end = end) %>% 
+  mutate(topology = "outside") %>% 
+  as_tibble()
+
+yvc1_inside <- str_locate_all(yvc1_TMbed_result$topology,"i+")
+names(yvc1_inside) <- unique(yvc1_TMbed_result$uniprotID)
+yvc1_inside_list <- purrr::map(yvc1_inside, as.data.table)
+yvc1_inside_df <- rbindlist(yvc1_inside_list, fill = TRUE, idcol = T) %>% 
+  dplyr::rename(uniprotID = .id, dom_start = start, dom_end = end) %>% 
+  mutate(topology = "inside") %>% 
+  as_tibble()
+
+yvc1_signal <- str_locate_all(yvc1_TMbed_result$topology,"S+")
+names(yvc1_signal) <- unique(yvc1_TMbed_result$uniprotID)
+yvc1_signal_list <- purrr::map(yvc1_signal, as.data.table)
+yvc1_signal_df <- rbindlist(yvc1_signal_list, fill = TRUE, idcol = T) %>% 
+ dplyr::rename(uniprotID = .id, dom_start = start, dom_end = end) %>% 
+  mutate(topology = "signal") %>% 
+  as_tibble()
+
+yvc1_TMhelix <- str_locate_all(yvc1_TMbed_result$topology,"h+")
+names(yvc1_TMhelix) <- unique(yvc1_TMbed_result$uniprotID)
+yvc1_TMhelix_list <- purrr::map(yvc1_TMhelix, as.data.table)
+yvc1_TMhelix_df <- rbindlist(yvc1_TMhelix_list, fill = TRUE, idcol = T) %>% 
+ dplyr::rename(uniprotID = .id, dom_start = start, dom_end = end) %>% 
+  mutate(topology = "TMhelix") %>% 
+  as_tibble()
+
+
+yvc1_TMbed_df <- bind_rows(yvc1_outside_df, yvc1_inside_df, yvc1_signal_df, yvc1_TMhelix_df) %>% 
+  mutate(
+    topology = factor(topology, 
+      levels = c("outside", "inside","periplasm", "TMhelix", "Beta sheet", "signal"),
+      labels = c("extracellular", "cytoplasm", "periplasm","transmembrane helix", "beta sheet", "signal peptide"))
+  ) %>%
+  full_join(yvc1_hits_info)
+
+yvc1_TMbed_df
+
+
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+```{r DeepTMHMM topology plots}
+
+#Set some plot parameters for ggplot 
+
+myfourcolours <-  c("#f2cc8f", "#81b29a", "#6a4c93","#e07a5f")
+
+seg_size <- 6
+big_text <- 15
+small_text <- 10
+my_theme_1 <-  theme(
+    axis.title = element_text(size = big_text),
+    legend.title = element_text(size = big_text + 2),
+    legend.text = element_text(size = big_text),
+    legend.position = "bottom", 
+    title = element_text(size = big_text + 2))
+
+flc2_topology_plot <- 
+  ggplot(data = yvc1_DeepTMHMM_result, aes(x = dom_start, xend = dom_end, y = uniprotID, yend = uniprotID, colour = topology)) +
+  geom_segment(size =seg_size) + 
+  theme_classic() +
+facet_grid(species ~ . , scales = "free_y", space = "free", switch = "y") +
+  labs(x = "residue", y = "species") +
+  theme(strip.placement = "outside", 
+        strip.background = element_blank(),
+        strip.text.y.left = element_text(angle = 0, hjust=1, size = big_text),
+        axis.title.y = element_blank(),
+        axis.text.y  = element_blank()) + 
+  ggtitle("FLC proteins") + 
+geom_text(data = flc2_DeepTMHMM_result %>% group_by(uniprotID) %>% 
+filter(dom_end == max(dom_end)),
+aes(x = dom_end, y = uniprotID, label = uniprotID),
+nudge_x = 100,
+hjust = 1,
+show.legend = FALSE, 
+colour = "grey50", 
+size = 2
+)
+flc2_topology_plot + my_theme_1 + scale_color_manual(values = myfourcolours)
+
+yvc1_topology_plot <- 
+  ggplot(data = yvc1_DeepTMHMM_result, aes(x = dom_start, xend = dom_end, y = uniprotID, yend = uniprotID, colour = topology)) +
+  geom_segment(size =seg_size) + 
+  theme_classic() +
+facet_grid(species ~ . , scales = "free_y", space = "free", switch = "y") +
+  labs(x = "residue", y = "species") +
+  theme(strip.placement = "outside", 
+        strip.background = element_blank(),
+        strip.text.y.left = element_text(angle = 0, hjust=1, size = big_text),
+        axis.title.y = element_blank(),
+        axis.text.y  = element_blank(),
+        legend.position = "bottom") + 
+  ggtitle("TRPF proteins") + 
+geom_text(data = yvc1_DeepTMHMM_result %>% group_by(uniprotID) %>% 
+filter(dom_end == max(dom_end)),
+aes(x = dom_end, y = uniprotID, label = uniprotID),
+nudge_x = 130,
+hjust = 1,
+show.legend = FALSE, 
+colour = "grey70", 
+size = 2
+)
+
+yvc1_topology_plot + my_theme_1 + scale_color_manual(values = myfourcolours)
+```
+
+
+
+## TO DO 
+
+Swap the uniprot protein sequences for A. fumigatus E9QW57 for the fungiDB protein sequence and re-do the topology prediction. The uniprot protein much smaller than the fungiDB protein and looks to be a misannoation. Several transciptome experiments detect all exons predicted by fungiDB in the mRNA. 
+
+
+

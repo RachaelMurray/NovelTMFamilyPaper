@@ -1,0 +1,9 @@
+From	Entry	Entry Name	Protein names	Gene Names	Organism	Length	Organism (ID)
+A4D9D5_ASPFU	A4D9D5	A4D9D5_ASPFU	Potassium ion channel Yvc1, putative	AFUA_3G13490	Neosartorya fumigata (strain ATCC MYA-4609 / Af293 / CBS 101355 / FGSC A1100) (Aspergillus fumigatus)	670	330879
+E9QW57_ASPFU	E9QW57	E9QW57_ASPFU	Ion_trans domain-containing protein	AFUA_6G11180	Neosartorya fumigata (strain ATCC MYA-4609 / Af293 / CBS 101355 / FGSC A1100) (Aspergillus fumigatus)	435	330879
+J9VJA5_CRYNH	J9VJA5	J9VJA5_CRYNH	Calcium activated cation channel protein	CNAG_07368	Cryptococcus neoformans var. grubii serotype A (strain H99 / ATCC 208821 / CBS 10515 / FGSC 9487) (Filobasidiella neoformans var. grubii)	621	235443
+J9VNS0_CRYNH	J9VNS0	J9VNS0_CRYNH	Nonselective cation channel protein	CNAG_03844	Cryptococcus neoformans var. grubii serotype A (strain H99 / ATCC 208821 / CBS 10515 / FGSC 9487) (Filobasidiella neoformans var. grubii)	784	235443
+J9VPH2_CRYNH	J9VPH2	J9VPH2_CRYNH	PKD_channel domain-containing protein	CNAG_05834	Cryptococcus neoformans var. grubii serotype A (strain H99 / ATCC 208821 / CBS 10515 / FGSC 9487) (Filobasidiella neoformans var. grubii)	923	235443
+YVC1_YEAST	Q12324	YVC1_YEAST	Calcium channel YVC1 (TRP homolog) (Yeast vacuolar conductance protein 1)	YVC1 YOR087W YOR088W YOR3151W	Saccharomyces cerevisiae (strain ATCC 204508 / S288c) (Baker's yeast)	675	559292
+Q4WM38_ASPFU	Q4WM38	Q4WM38_ASPFU	Integral membrane channel protein, putative	AFUA_6G11300	Neosartorya fumigata (strain ATCC MYA-4609 / Af293 / CBS 101355 / FGSC A1100) (Aspergillus fumigatus)	956	330879
+T2BP81_CRYNH	T2BP81	T2BP81_CRYNH	PKD_channel domain-containing protein	CNAG_05834	Cryptococcus neoformans var. grubii serotype A (strain H99 / ATCC 208821 / CBS 10515 / FGSC 9487) (Filobasidiella neoformans var. grubii)	884	235443
