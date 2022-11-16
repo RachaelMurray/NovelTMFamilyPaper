@@ -7,7 +7,11 @@ output: html_document
 
 # Summary 
 
-This document was created to draft a figure that shows fungal TRP proteins are not structurally realted to fungal FLC proteins.
+This document was created to draft a figure that shows fungal TRP proteins are not structurally related to fungal FLC proteins.
+
+I searched for homologs of S. cerevisiae Flc2 and S. cerevisiae Yvc1 in 4 fungal proteomes: A. fumigatus, S. cerevisiae, S. pombe, and C. neoformans. I used two independent tools, DeepTMHMM and TMbed, to predict the transmembrane topolgy of Flc2 and Yvc1 homologs, and visulaise them using ggplot2. 
+
+
 
 ```{r setup, include=FALSE}
 library(here)
@@ -22,8 +26,9 @@ library(data.table)
 ```
 
 
-Transmembrane topology predictions
+##Transmembrane topology predictions
 
+Load protein Flc2 and Yvc1 homolog information including uniprotIDs and species names
 ```{r load protein IDs and species}
 
 flc2_hits_info <- read_tsv(
@@ -51,6 +56,7 @@ yvc1_hits_info <- read_tsv(
 ```
 
 
+Load DeepTMHMM topology predictions and combine with protein information 
 ```{r load DeepTMHMM predictions}
 
 flc2_DeepTMHMM_result <- 
@@ -86,32 +92,27 @@ read_table(
 
 ```
 
-
-
-
-
-
-
-
-
-
-
-
-
+Load TMbed topology predictions and combine with protein information 
 ```{r load TMbed predictions}
+
+#Load flc2 homolog topoology predictions in 3-line format
 
 flc2_TMbed_3line <- read_tsv(here("data/TRP_comparison_data/membrane_topology/Flc2_predictions_TMbed_3line.txt"), col_names = FALSE) %>% 
   dplyr::rename("data" = "X1")
 
+#Extract uniprot names
 flc2_TMbed_3line_names <- flc2_TMbed_3line[seq(1, nrow(flc2_TMbed_3line), 3), ] %>% 
   transmute(uniprotID = word(data,2, sep = fixed("|")))
 
+#Extract topology prediction string
 flc2_TMbed_3line_prediction <- flc2_TMbed_3line[seq(3, nrow(flc2_TMbed_3line), 3), ] %>% 
 dplyr::rename("topology" = "data")
 
+#Combine to make a nicer dataframe
 flc2_TMbed_result <- tibble(flc2_TMbed_3line_names,flc2_TMbed_3line_prediction) %>% 
   mutate(topology = str_replace_all(topology, "H", "h"))
 
+#Get outside, inside, signal peptide, and TMhelix start and end dataframes 
 flc2_outside <- str_locate_all(flc2_TMbed_result$topology,"o+")
 names(flc2_outside) <- unique(flc2_TMbed_result$uniprotID)
 flc2_outside_list <- purrr::map(flc2_outside, as.data.table)
@@ -144,7 +145,7 @@ flc2_TMhelix_df <- rbindlist(flc2_TMhelix_list, fill = TRUE, idcol = T) %>%
   mutate(topology = "TMhelix") %>% 
   as_tibble()
 
-
+#Join start and end topology sites with species information 
 flc2_TMbed_df <- bind_rows(flc2_outside_df, flc2_inside_df, flc2_signal_df, flc2_TMhelix_df) %>% 
   mutate(
     topology = factor(topology, 
@@ -155,20 +156,25 @@ flc2_TMbed_df <- bind_rows(flc2_outside_df, flc2_inside_df, flc2_signal_df, flc2
 
 flc2_TMbed_df
 
-###
 
+#Load flc2 homolog topoology predictions in 3-line format
 yvc1_TMbed_3line <- read_tsv(here("data/TRP_comparison_data/membrane_topology/Yvc1_predictions_TMbed_3line.txt"), col_names = FALSE) %>% 
   dplyr::rename("data" = "X1")
 
+#Extract uniprot names
 yvc1_TMbed_3line_names <- yvc1_TMbed_3line[seq(1, nrow(yvc1_TMbed_3line), 3), ] %>% 
   transmute(uniprotID = word(data,2, sep = fixed("|")))
 
+#Extract topology prediction string
 yvc1_TMbed_3line_prediction <- yvc1_TMbed_3line[seq(3, nrow(yvc1_TMbed_3line), 3), ] %>% 
 dplyr::rename("topology" = "data")
 
+#Combine to make a nicer dataframe
 yvc1_TMbed_result <- tibble(yvc1_TMbed_3line_names,yvc1_TMbed_3line_prediction) %>% 
   mutate(topology = str_replace_all(topology, "H", "h"))
 
+
+#Get outside, inside, signal peptide, and TMhelix start and end dataframes 
 yvc1_outside <- str_locate_all(yvc1_TMbed_result$topology,"o+")
 names(yvc1_outside) <- unique(yvc1_TMbed_result$uniprotID)
 yvc1_outside_list <- purrr::map(yvc1_outside, as.data.table)
@@ -201,7 +207,7 @@ yvc1_TMhelix_df <- rbindlist(yvc1_TMhelix_list, fill = TRUE, idcol = T) %>%
   mutate(topology = "TMhelix") %>% 
   as_tibble()
 
-
+#Join start and end topology sites with species information 
 yvc1_TMbed_df <- bind_rows(yvc1_outside_df, yvc1_inside_df, yvc1_signal_df, yvc1_TMhelix_df) %>% 
   mutate(
     topology = factor(topology, 
@@ -211,42 +217,40 @@ yvc1_TMbed_df <- bind_rows(yvc1_outside_df, yvc1_inside_df, yvc1_signal_df, yvc1
   full_join(yvc1_hits_info)
 
 yvc1_TMbed_df
-
-
-
 ```
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+Set some ggplot parameters for topology predcition graphs 
 ```{r DeepTMHMM topology plots}
 
 #Set some plot parameters for ggplot 
 
-myfourcolours <-  c("#f2cc8f", "#81b29a", "#6a4c93","#e07a5f")
+col_sig <- "#e07a5f"
+col_ext <- "#f2cc8f"
+col_TM <- "#6a4c93"
+col_cyto <- "#81b29a"
 
-seg_size <- 6
+myfourcolours <-  c(col_ext, col_cyto, col_TM, col_sig)
+
+seg_size <- 5.5
 big_text <- 15
 small_text <- 10
 my_theme_1 <-  theme(
     axis.title = element_text(size = big_text),
-    legend.title = element_text(size = big_text + 2),
-    legend.text = element_text(size = big_text),
+    axis.text.x = element_text(size = small_text),
+    axis.line = element_line(colour = 'black', size = 1),
+    axis.ticks = element_line(colour = 'black', size = 1),
+    legend.title = element_blank(),
+    legend.text = element_text(size = big_text, margin = margin(r = 2, unit = "cm")),
     legend.position = "bottom", 
-    title = element_text(size = big_text + 2))
+    title = element_text(size = big_text + 2)) 
+```
 
-flc2_topology_plot <- 
-  ggplot(data = yvc1_DeepTMHMM_result, aes(x = dom_start, xend = dom_end, y = uniprotID, yend = uniprotID, colour = topology)) +
+
+DeepTMHMM topology plots 
+```{r}
+
+flc2_topology_plot_DeepTMHMM <- 
+  ggplot(data = flc2_DeepTMHMM_result, aes(x = dom_start, xend = dom_end, y = uniprotID, yend = uniprotID, colour = topology)) +
   geom_segment(size =seg_size) + 
   theme_classic() +
 facet_grid(species ~ . , scales = "free_y", space = "free", switch = "y") +
@@ -260,15 +264,15 @@ facet_grid(species ~ . , scales = "free_y", space = "free", switch = "y") +
 geom_text(data = flc2_DeepTMHMM_result %>% group_by(uniprotID) %>% 
 filter(dom_end == max(dom_end)),
 aes(x = dom_end, y = uniprotID, label = uniprotID),
-nudge_x = 100,
+nudge_x = 110,
 hjust = 1,
 show.legend = FALSE, 
 colour = "grey50", 
 size = 2
 )
-flc2_topology_plot + my_theme_1 + scale_color_manual(values = myfourcolours)
+flc2_topology_plot_DeepTMHMM + my_theme_1 + scale_color_manual(values = myfourcolours)
 
-yvc1_topology_plot <- 
+yvc1_topology_plot_DeepTMHMM <- 
   ggplot(data = yvc1_DeepTMHMM_result, aes(x = dom_start, xend = dom_end, y = uniprotID, yend = uniprotID, colour = topology)) +
   geom_segment(size =seg_size) + 
   theme_classic() +
@@ -284,15 +288,95 @@ facet_grid(species ~ . , scales = "free_y", space = "free", switch = "y") +
 geom_text(data = yvc1_DeepTMHMM_result %>% group_by(uniprotID) %>% 
 filter(dom_end == max(dom_end)),
 aes(x = dom_end, y = uniprotID, label = uniprotID),
-nudge_x = 130,
+nudge_x = 90,
 hjust = 1,
 show.legend = FALSE, 
-colour = "grey70", 
+colour = "grey50", 
 size = 2
 )
 
-yvc1_topology_plot + my_theme_1 + scale_color_manual(values = myfourcolours)
+yvc1_topology_plot_DeepTMHMM + my_theme_1 + scale_color_manual(values = myfourcolours)
 ```
+
+TMbed topology plots 
+```{r}
+flc2_topology_plot_TMbed <- 
+  ggplot(data = flc2_TMbed_df, aes(x = dom_start, xend = dom_end, y = uniprotID, yend = uniprotID, colour = topology)) +
+  geom_segment(size =seg_size) + 
+  theme_classic() +
+facet_grid(species ~ . , scales = "free_y", space = "free", switch = "y") +
+  labs(x = "residue", y = "species") +
+  theme(strip.placement = "outside", 
+        strip.background = element_blank(),
+        strip.text.y.left = element_text(angle = 0, hjust=1, size = big_text),
+        axis.title.y = element_blank(),
+        axis.text.y  = element_blank()) + 
+  ggtitle("FLC proteins") + 
+geom_text(data = flc2_DeepTMHMM_result %>% group_by(uniprotID) %>% 
+filter(dom_end == max(dom_end)),
+aes(x = dom_end, y = uniprotID, label = uniprotID),
+nudge_x = 110,
+hjust = 1,
+show.legend = FALSE, 
+colour = "grey50", 
+size = 2
+)
+flc2_topology_plot_TMbed + my_theme_1 + scale_color_manual(values = myfourcolours)
+
+yvc1_topology_plot_TMbed <- 
+  ggplot(data = yvc1_TMbed_df, aes(x = dom_start, xend = dom_end, y = uniprotID, yend = uniprotID, colour = topology)) +
+  geom_segment(size =seg_size) + 
+  theme_classic() +
+facet_grid(species ~ . , scales = "free_y", space = "free", switch = "y") +
+  labs(x = "residue", y = "species") +
+  theme(strip.placement = "outside", 
+        strip.background = element_blank(),
+        strip.text.y.left = element_text(angle = 0, hjust=1, size = big_text),
+        axis.title.y = element_blank(),
+        axis.text.y  = element_blank(),
+        legend.position = "bottom") + 
+  ggtitle("TRPF proteins") + 
+geom_text(data = yvc1_DeepTMHMM_result %>% group_by(uniprotID) %>% 
+filter(dom_end == max(dom_end)),
+aes(x = dom_end, y = uniprotID, label = uniprotID),
+nudge_x = 90,
+hjust = 1,
+show.legend = FALSE, 
+colour = "grey50", 
+size = 2
+)
+
+yvc1_topology_plot_TMbed + my_theme_1 + scale_color_manual(values = myfourcolours)
+```
+
+
+Make multi topology plots 
+```{r}
+my_legend_colours <- c(col_sig,col_ext,col_TM,col_cyto)
+plot_with_legend <- flc2_topology_plot_DeepTMHMM + my_theme_1 + scale_color_manual(values = my_legend_colours, limits=c('signal peptide', 'extracellular', 'transmembrane helix', 'cytoplasm'))
+
+legend <- cowplot::get_legend(plot_with_legend)
+
+p1 <- flc2_topology_plot_DeepTMHMM + my_theme_1 + scale_color_manual(values = myfourcolours) + theme(legend.position="none") + scale_x_continuous(breaks = c(0,200,400,600,800,1000,1200))
+
+p2 <- yvc1_topology_plot_DeepTMHMM + my_theme_1 + scale_color_manual(values = myfourcolours) + theme(legend.position="none") + scale_x_continuous(breaks = c(0,200,400,600,800,1000,1200))
+
+p3 <- flc2_topology_plot_TMbed + my_theme_1 + scale_color_manual(values = myfourcolours) + theme(legend.position="none") + scale_x_continuous(breaks = c(0,200,400,600,800,1000,1200))
+
+p4 <- yvc1_topology_plot_TMbed + my_theme_1 + scale_color_manual(values = myfourcolours) + theme(legend.position="none") + scale_x_continuous(breaks = c(0,200,400,600,800,1000,1200))
+
+plots <- cowplot::plot_grid(p1,p2,p3,p4, nrow = 2, labels = c("A","", "B",""), label_size = 26, vjust = 1)
+
+plots_legend_bottom <- cowplot::plot_grid(plots, legend, ncol = 1, rel_heights = c(1, .1))
+
+plots_legend_bottom
+
+```
+
+
+
+
+
 
 
 
